@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "rpa-price"
+version = "0.1.0"
+description = "An RPA to compare prices between amazon and aliexpress for brazilian clients"
+authors = ["Victor Raton <43411882+victorfernandesraton@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+selenium = "^4.17.2"
+bs4 = "^0.0.2"
+pandas = "^2.2.0"
+python-decouple = "^3.8"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
