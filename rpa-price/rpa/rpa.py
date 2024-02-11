@@ -1,4 +1,5 @@
 import time
+from selenium.webdriver import ActionChains
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
@@ -28,12 +29,13 @@ class BaseScrapper:
 class AmazonScrapper(BaseScrapper):
     def __init__(self) -> None:
         super().__init__()
-        self.url = "https://wwww.amazon.com.br"
+        self.url = "https://amazon.com.br"
 
     def execute(self, products: list[str]):
         driver_key = self.open_browser()
         self.drivers[driver_key].get(self.url)
         self.set_delivery_by_zipcode(driver_key, config("ZIPCODE"))
+        time.sleep(3)
         content_wait = WebDriverWait(self.drivers[driver_key], timeout=20)
         card_content = []
         result = []
@@ -58,6 +60,7 @@ class AmazonScrapper(BaseScrapper):
                     )
                 )
                 button_submit.click()
+                time.sleep(3)
             except TimeoutException:
                 print("not found submit button")
 
@@ -81,6 +84,11 @@ class AmazonScrapper(BaseScrapper):
             elif len(card_content) > 3:
                 card_content = card_content[0:2]
 
+            for card in card_content:
+                if card:
+                    ActionChains(self.drivers[driver_key]).scroll_to_element(card)
+                    time.sleep(2)
+
             card_content = [
                 self.get_data_from_card(result.get_attribute("outerHTML"))
                 for result in card_content
@@ -89,6 +97,7 @@ class AmazonScrapper(BaseScrapper):
             for card in card_content:
                 print(f"Go to {card.get('name')}")
                 self.drivers[driver_key].get(f"{self.url}{card.get('link')}")
+
                 complete_data = self.get_data_from_static_page(
                     self.drivers[driver_key].page_source
                 )
@@ -117,7 +126,7 @@ class AmazonScrapper(BaseScrapper):
         spec_table = soup.select_one("table#productDetails_techSpec_section_1").text
         spec_df = pd.read_html(spec_table)
 
-    def set_delivery_by_zipcode(self, driver_key: str, zipcode: str) -> str:
+    def set_delivery_by_zipcode(self, driver_key: str, zipcode: str) -> None:
         change_zipcode = WebDriverWait(self.drivers[driver_key], timeout=20).until(
             EC.presence_of_element_located(
                 (By.XPATH, "//*[@id='nav-global-location-popover-link']")
@@ -131,7 +140,8 @@ class AmazonScrapper(BaseScrapper):
         time.sleep(5)
 
         inputs_xpath = [
-            "//input[@id='GLUXZipUpdateInput_0']" "//input[@id='GLUXZipUpdateInput_1']"
+            "//input[@id='GLUXZipUpdateInput_0']",
+            "//input[@id='GLUXZipUpdateInput_1']",
         ]
 
         splited_zipcode = zipcode.split("-")
@@ -142,3 +152,12 @@ class AmazonScrapper(BaseScrapper):
             time.sleep(2)
             zipcode_input.send_keys(value)
             time.sleep(4)
+
+        button_submit = WebDriverWait(self.drivers[driver_key], timeout=10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//*[@id='GLUXZipUpdate']/span/input")
+            )
+        )
+
+        time.sleep(3)
+        button_submit.click()
