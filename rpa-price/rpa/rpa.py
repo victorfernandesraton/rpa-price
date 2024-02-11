@@ -87,8 +87,8 @@ class AmazonScrapper(BaseScrapper):
             ]
             # go to page and get content for each one
             for card in card_content:
-                print(f"Go to {card.get("name")}")
-                self.drivers[driver_key].get(f"{self.url}{card.get("link")}")
+                print(f"Go to {card.get('name')}")
+                self.drivers[driver_key].get(f"{self.url}{card.get('link')}")
                 complete_data = self.get_data_from_static_page(
                     self.drivers[driver_key].page_source
                 )
@@ -140,5 +140,5 @@ class AmazonScrapper(BaseScrapper):
                 EC.presence_of_element_located((By.XPATH, inputs_xpath[idx]))
             )
             time.sleep(2)
-            zipcode_input.send_keys(value 
+            zipcode_input.send_keys(value)
             time.sleep(4)
